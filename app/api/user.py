@@ -1,7 +1,10 @@
+from uuid import UUID
+
 from fastapi import APIRouter, status, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, require_role
+from app.schemas.enums import UserRole
 from app.schemas.user import UserCreate, UserPublic, UserLogin
 from app.db.session import get_session
 from app.crud.user import UserCRUD
@@ -61,3 +64,24 @@ async def user_me(
     current_user: UserPublic = Depends(get_current_user)
 ):
     return current_user
+
+
+@router.patch("/change-role/{user_id}", status_code=status.HTTP_200_OK)
+async def change_user_role(
+    user_id: UUID,
+    new_role: UserRole,
+    user_crud: UserCRUD = Depends(UserCRUD),
+    session: AsyncSession = Depends(get_session),
+    current_user: UserPublic = Depends(require_role(UserRole.admin)),
+):
+    user = await user_crud.get_object_by_id(user_id, session)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    user.role = new_role.value
+    await session.commit()
+    await session.refresh(user)

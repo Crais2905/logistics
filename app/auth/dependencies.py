@@ -1,9 +1,10 @@
-from  fastapi import Request, Depends, HTTPException
+from  fastapi import Request, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.user import UserCRUD
 from app.db.session import get_session
 from app.auth.tokens import decode_token
+from app.schemas.user import UserPublic
 
 
 async def get_current_user(
@@ -31,3 +32,19 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
 
     return user
+
+
+def require_role(*allowed_role):
+    allowed_role = {role.value for role in allowed_role}
+
+    async def role_checker(
+        current_user: UserPublic = Depends(get_current_user)
+    ):
+        if current_user.role not in allowed_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+        return current_user
+
+    return role_checker
