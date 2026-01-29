@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from uuid import  UUID
+from uuid import UUID
 
 
 class WarehouseBase(BaseModel):

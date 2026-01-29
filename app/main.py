@@ -4,6 +4,7 @@ from app.db.session import engine
 from app.db.models import Base
 from app.api.user import router as user_router
 from app.api.warehouse import router as warehouse_router
+from app.api.product import router as product_router
 
 app = FastAPI()
 
@@ -16,3 +17,4 @@ async def on_startup():
 
 app.include_router(user_router, prefix="/auth", tags=["Auth"])
 app.include_router(warehouse_router, prefix="/warehouse", tags=["Warehouse"])
+app.include_router(product_router, prefix="/product", tags=["Product"])

@@ -62,7 +62,6 @@ class Connector:
 
         return result.scalar()
 
-
     async def deactivate_object(
         self, object_id: UUID,
         session: AsyncSession
