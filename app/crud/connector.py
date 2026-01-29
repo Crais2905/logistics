@@ -61,3 +61,19 @@ class Connector:
         await session.commit()
 
         return result.scalar()
+
+
+    async def deactivate_object(
+        self, object_id: UUID,
+        session: AsyncSession
+    ):
+        object = await self.get_object_by_unic_field(
+            object_id,
+            self.model.id,
+            session
+        )
+
+        object.is_active = False
+        await session.commit()
+        await session.refresh(object)
+

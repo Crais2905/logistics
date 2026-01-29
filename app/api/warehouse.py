@@ -117,8 +117,5 @@ async def warehouse_deactivate(
             detail="Warehouse not found"
         )
 
-    warehouse.is_active = False
-    await session.commit()
-    await session.refresh(warehouse)
-
+    await warehouse_crud.deactivate_object(warehouse_id, session)
     return warehouse
