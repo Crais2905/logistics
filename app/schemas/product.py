@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, ConfigDict
 from uuid import UUID
+from datetime import datetime
 
 from app.schemas.enums import ProductUnit
 
@@ -20,6 +21,10 @@ class ProductUpdate(BaseModel):
     sku: Optional[str] = None
     unit: Optional[ProductUnit] = None
 
+    model_config = ConfigDict(use_enum_values=True)
+
 
 class ProductPublic(ProductBase):
     id: UUID
+    is_active: bool
+    create_at: datetime

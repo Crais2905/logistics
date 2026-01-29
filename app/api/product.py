@@ -62,3 +62,57 @@ async def get_product(
         )
 
     return product
+
+
+@router.patch("/{product_id}", status_code=status.HTTP_200_OK, response_model=ProductPublic)
+async def update_warehouse(
+    product_id: UUID,
+    new_data: ProductUpdate,
+    product_crud: ProductCRUD = Depends(ProductCRUD),
+    session: AsyncSession = Depends(get_session),
+    current_user: UserPublic = Depends(require_role(
+        UserRole.admin, UserRole.manager
+    ))
+):
+    product = await product_crud.get_object_by_unic_field(
+        product_id,
+        Product.id,
+        session
+    )
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    if not product.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Product isn't active"
+        )
+
+    return await product_crud.update_object(product_id, new_data, session)
+
+
+@router.patch("/{product_id}/deactivate", status_code=status.HTTP_200_OK, response_model=ProductPublic)
+async def warehouse_deactivate(
+    product_id: UUID,
+    product_crud: ProductCRUD = Depends(ProductCRUD),
+    session: AsyncSession = Depends(get_session),
+    current_user: UserPublic = Depends(require_role(UserRole.admin))
+):
+    product = await product_crud.get_object_by_unic_field(
+        product_id,
+        Product.id,
+        session
+    )
+
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    await product_crud.deactivate_object(product_id, session)
+    return product
