@@ -22,3 +22,25 @@ class User(Base):
     role: Mapped[str] = mapped_column(String, default=UserRole.viewer.value)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     create_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class Warehouse(Base):
+    __tablename__ = 'warehouse'
+
+    id: Mapped[UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(256), unique=True, nullable=False)
+    location: Mapped[str] = mapped_column(String(256), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    create_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class Product(Base):
+    __tablename__ = 'product'
+
+    id: Mapped[UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
+    name: Mapped[str] = mapped_column(String(256), unique=True, nullable=False)
+    sku: Mapped[str] = mapped_column(String(256), nullable=False)
+    unit: Mapped[str] = mapped_column(String(50))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    create_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+

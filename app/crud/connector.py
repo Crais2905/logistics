@@ -1,12 +1,12 @@
 from fastapi import Depends
 from decouple import config
-from typing import Any
+from typing import Any, List
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import insert, delete
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, InstrumentedAttribute
 
 
 class Connector:
@@ -18,17 +18,33 @@ class Connector:
         result = await session.execute(stmt)
         await session.commit()
 
-        return result
+        return result.scalar()
 
-    async def get_object_by_id(
-            self, obj_id: UUID,
+    async def get_objects(
+            self,
             session: AsyncSession,
-            selection_fields: list = None
+            offset: int = 0,
+            limit: int = 10,
+            filters: List | None = None,
     ):
-        stmt = select(self.model).where(self.model.id == obj_id)
+        stmt = select(self.model)
+
+        if filters:
+            stmt = stmt.where(*filters)
+
+        stmt = stmt.offset(offset).limit(limit)
+        return await session.scalars(stmt)
+
+    async def get_object_by_unic_field(
+        self, field_value,
+        field: InstrumentedAttribute,
+        session: AsyncSession,
+        selection_fields: list[InstrumentedAttribute] | None = None
+    ):
+        stmt = select(self.model).where(field == field_value)
 
         if selection_fields is not None:
-            for field in selection_fields:
-                stmt = stmt.options(selectinload(getattr(self.model, field)))
+            for s_field in selection_fields:
+                stmt = stmt.options(selectinload(s_field))
 
         return await session.scalar(stmt)
