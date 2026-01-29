@@ -89,6 +89,12 @@ async def update_warehouse(
             detail="Warehouse not found"
         )
 
+    if not warehouse.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Warehouse isn't active"
+        )
+
     return await warehouse_crud.update_object(warehouse_id, new_data, session)
 
 
