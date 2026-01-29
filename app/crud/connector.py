@@ -1,11 +1,12 @@
 from fastapi import Depends
+
 from decouple import config
 from typing import Any, List
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import insert, delete
+from sqlalchemy import insert, delete, update
 from sqlalchemy.orm import selectinload, InstrumentedAttribute
 
 
@@ -48,3 +49,15 @@ class Connector:
                 stmt = stmt.options(selectinload(s_field))
 
         return await session.scalar(stmt)
+
+    async def update_object(
+            self, object_id: UUID,
+            new_values,
+            session: AsyncSession
+    ):
+        values = new_values.model_dump(exclude_unset=True)
+        stmt = update(self.model).where(self.model.id == object_id).values(values).returning(self.model)
+        result = await session.execute(stmt)
+        await session.commit()
+
+        return result.scalar()
