@@ -26,7 +26,7 @@ class Connector:
             session: AsyncSession,
             offset: int = 0,
             limit: int = 10,
-            filters: List | None = None,
+            filters: list | None = None,
     ):
         stmt = select(self.model)
 
@@ -66,13 +66,13 @@ class Connector:
         self, object_id: UUID,
         session: AsyncSession
     ):
-        object = await self.get_object_by_unic_field(
+        obj = await self.get_object_by_unic_field(
             object_id,
             self.model.id,
             session
         )
 
-        object.is_active = False
+        obj.is_active = False
         await session.commit()
-        await session.refresh(object)
+        await session.refresh(obj)
 
