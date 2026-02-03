@@ -1,16 +1,16 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, status, Depends, HTTPException, Response
+from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.product import ProductCreate, ProductUpdate, ProductPublic
-from app.schemas.user import UserPublic
+from app.schemas.rout_schemas.product import ProductCreate, ProductUpdate, ProductPublic
+from app.schemas.rout_schemas.user import UserPublic
 from app.crud.product import ProductCRUD
-from app.auth.dependencies import get_current_user, require_role
+from app.auth.dependencies import require_role
 from app.db.session import get_session
 from app.db.models import Product
-from app.schemas.enums import UserRole
+from app.schemas.enums.enums import UserRole
 
 router = APIRouter()
 

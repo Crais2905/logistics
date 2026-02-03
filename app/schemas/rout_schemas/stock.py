@@ -1,8 +1,8 @@
 from datetime import datetime
 from pydantic import BaseModel
 
-from app.schemas.product import ProductPublic
-from app.schemas.warehouse import WarehousePublic
+from app.schemas.rout_schemas.product import ProductPublic
+from app.schemas.rout_schemas.warehouse import WarehousePublic
 
 
 class StockBase(BaseModel):
@@ -10,6 +10,6 @@ class StockBase(BaseModel):
     updated_at: datetime
 
 
-class StockPublic(BaseModel):
+class StockPublic(StockBase):
     product: ProductPublic
     warehouse: WarehousePublic

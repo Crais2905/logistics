@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud.user import UserCRUD
 from app.db.session import get_session
 from app.auth.tokens import decode_token
-from app.schemas.user import UserPublic
+from app.schemas.rout_schemas.user import UserPublic
 
 
 async def get_current_user(

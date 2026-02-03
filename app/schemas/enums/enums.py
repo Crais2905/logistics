@@ -12,3 +12,10 @@ class ProductUnit(Enum):
     kg = "kg"
     l = "l"
     m = "m"
+
+
+class TransferType(Enum):
+    INBOUND = 'inbound'
+    OUTBOUND = 'outbound'
+    TRANSFER = 'transfer'
+    ADJUSTMENT = 'adjustment'

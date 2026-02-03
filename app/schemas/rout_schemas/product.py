@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict
 from uuid import UUID
 from datetime import datetime
 
-from app.schemas.enums import ProductUnit
+from app.schemas.enums.enums import ProductUnit
 
 
 class ProductBase(BaseModel):

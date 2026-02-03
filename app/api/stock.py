@@ -1,10 +1,9 @@
 from typing import List
-from uuid import UUID
 
-from fastapi import APIRouter, status, Depends, HTTPException, Response
+from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.stock import StockPublic
+from app.schemas.rout_schemas.stock import StockPublic
 from app.utils.stock_filters import stock_filters
 from app.crud.stock import StockCRUD
 from app.db.session import get_session
@@ -27,3 +26,5 @@ async def get_stocks(
         )
 
     return await stock_crud.get_objects(session, offset, limit, filters)
+
+

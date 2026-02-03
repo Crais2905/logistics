@@ -6,6 +6,7 @@ from app.api.user import router as user_router
 from app.api.warehouse import router as warehouse_router
 from app.api.product import router as product_router
 from app.api.stock import router as stock_router
+from app.api.inventory_operations import router as inventory_operations_router
 
 app = FastAPI()
 
@@ -20,3 +21,4 @@ app.include_router(user_router, prefix="/auth", tags=["Auth"])
 app.include_router(warehouse_router, prefix="/warehouse", tags=["Warehouse"])
 app.include_router(product_router, prefix="/product", tags=["Product"])
 app.include_router(stock_router, prefix="/stock", tags=["Stock"])
+app.include_router(inventory_operations_router, prefix="/operations", tags=["Inventory Operations"])

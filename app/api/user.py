@@ -4,8 +4,8 @@ from fastapi import APIRouter, status, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_role
-from app.schemas.enums import UserRole
-from app.schemas.user import UserCreate, UserPublic, UserLogin
+from app.schemas.enums.enums import UserRole
+from app.schemas.rout_schemas.user import UserCreate, UserPublic, UserLogin
 from app.db.session import get_session
 from app.crud.user import UserCRUD
 from app.auth.tokens import create_access_token

@@ -14,10 +14,19 @@ class Connector:
     def __init__(self, model):
         self.model = model
 
-    async def write_to_db(self, data, session: AsyncSession):
+    async def write_to_db(
+        self, data,
+        session: AsyncSession,
+        commit: bool = True
+    ):
         stmt = insert(self.model).values(data.model_dump()).returning(self.model)
         result = await session.execute(stmt)
-        await session.commit()
+
+        if commit:
+            await session.commit()
+            await session.refresh(result)
+        else:
+            await session.flush()
 
         return result.scalar()
 
