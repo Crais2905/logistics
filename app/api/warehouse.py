@@ -13,6 +13,7 @@ from app.auth.dependencies import require_role
 from app.db.session import get_session
 from app.db.models import Warehouse
 from app.schemas.enums.enums import UserRole
+from app.services.warehouse import WarehouseService, get_warehouse_service
 
 router = APIRouter()
 
@@ -128,10 +129,10 @@ async def get_warehouse_operations(
     warehouse_id: UUID,
     offset: int = 0,
     limit: int = 10,
-    warehouse_crud: WarehouseCRUD = Depends(WarehouseCRUD),
+    warehouse_service: WarehouseService = Depends(get_warehouse_service),
     inventory_operations_crud: InventoryOperationsCRUD = Depends(get_inventory_operations_crud),
     session: AsyncSession = Depends(get_session),
 ):
-    return await warehouse_crud.get_operations_by_warehouse_id(
+    return await warehouse_service.get_operations_by_warehouse_id(
         warehouse_id, session, inventory_operations_crud, offset=offset, limit=limit, desc=True
     )
