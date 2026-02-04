@@ -1,6 +1,7 @@
 from uuid import UUID
 
-from fastapi import Depends
+import asyncio
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -28,7 +29,16 @@ class InventoryOperationsCRUD(Connector):
         )
 
         operation = await self.write_to_db(data, session, commit=False)
-        await self._apply_stock_changes(operation, session)
+        try:
+            await self._apply_stock_changes(operation, session)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Insufficient stock"
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=f"{e}"
+            )
 
         await session.commit()
         return operation
@@ -39,8 +49,7 @@ class InventoryOperationsCRUD(Connector):
         session: AsyncSession
     ):
         qty = operation.quantity
-        print(type(operation.type))
-        print(operation.type)
+
         match operation.type:
             case TransferType.INBOUND.value:
                 await self.stock_crud.increase(

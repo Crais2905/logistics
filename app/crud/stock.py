@@ -20,7 +20,7 @@ class StockCRUD(Connector):
         stmt = select(self.model).where(
             self.model.product_id == product_id,
             self.model.warehouse_id == warehouse_id,
-        )
+        ).with_for_update()
 
         return await session.scalar(stmt)
 

@@ -25,8 +25,6 @@ class Connector:
         if commit:
             await session.commit()
             await session.refresh(result)
-        else:
-            await session.flush()
 
         return result.scalar()
 
