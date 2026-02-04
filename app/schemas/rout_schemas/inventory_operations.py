@@ -6,7 +6,7 @@ from app.schemas.enums.enums import TransferType
 from app.schemas.rules.inventory_operations import OPERATION_RULES
 
 
-class InventoryOperationCreate(BaseModel):
+class InventoryOperationsBase(BaseModel):
     type: TransferType
     product_id: UUID
     quantity: float = Field(gt=0)
@@ -16,6 +16,8 @@ class InventoryOperationCreate(BaseModel):
     to_warehouse_id: Optional[UUID] = None
     comment: Optional[str] = None
 
+
+class InventoryOperationCreate(InventoryOperationsBase):
     model_config = ConfigDict(use_enum_values=True)
 
     @model_validator(mode="after")
@@ -35,3 +37,7 @@ class InventoryOperationCreate(BaseModel):
             raise ValueError("Warehouses must be different")
 
         return self
+
+
+class InventoryOperationsPublic(InventoryOperationsBase):
+    id: int

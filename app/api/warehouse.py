@@ -6,7 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.rout_schemas.warehouse import WarehouseCreate, WarehousePublic, WarehouseUpdate
 from app.schemas.rout_schemas.user import UserPublic
+from app.schemas.rout_schemas.inventory_operations import InventoryOperationsPublic
 from app.crud.warehouse import WarehouseCRUD
+from app.crud.inventory_oprations import InventoryOperationsCRUD, get_inventory_operations_crud
 from app.auth.dependencies import require_role
 from app.db.session import get_session
 from app.db.models import Warehouse
@@ -119,3 +121,17 @@ async def warehouse_deactivate(
 
     await warehouse_crud.deactivate_object(warehouse_id, session)
     return warehouse
+
+
+@router.get("/{warehouse_id}/operations", status_code=status.HTTP_200_OK, response_model=List[InventoryOperationsPublic])
+async def get_warehouse_operations(
+    warehouse_id: UUID,
+    offset: int = 0,
+    limit: int = 10,
+    warehouse_crud: WarehouseCRUD = Depends(WarehouseCRUD),
+    inventory_operations_crud: InventoryOperationsCRUD = Depends(get_inventory_operations_crud),
+    session: AsyncSession = Depends(get_session),
+):
+    return await warehouse_crud.get_operations_by_warehouse_id(
+        warehouse_id, session, inventory_operations_crud, offset=offset, limit=limit, desc=True
+    )

@@ -2,12 +2,14 @@ from uuid import UUID
 
 import asyncio
 from fastapi import Depends, HTTPException, status
+from sqlalchemy import desc, or_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 
 from app.crud.connector import Connector
 from app.crud.stock import StockCRUD, get_stock_crud
-from app.db.models import InventoryOperation
+from app.db.models import InventoryOperation, Warehouse
 from app.schemas.enums.enums import TransferType
 from app.schemas.rout_schemas.inventory_operations import InventoryOperationCreate
 
@@ -88,6 +90,26 @@ class InventoryOperationsCRUD(Connector):
                     qty,
                     session=session,
                 )
+
+    async def get_warehouse_operations(
+        self, warehouse: Warehouse,
+        session: AsyncSession,
+        offset: int = 0,
+        limit: int = 10,
+        desc_: bool = False
+    ):
+        stmt = select(self.model).filter(
+            or_(
+                self.model.from_warehouse_id == warehouse.id,
+                self.model.to_warehouse_id == warehouse.id
+            )
+        )
+
+        if desc_:
+            stmt = stmt.order_by(desc(self.model.created_at))
+
+        stmt = stmt.offset(offset).limit(limit)
+        return await session.scalars(stmt)
 
 
 def get_inventory_operations_crud(
