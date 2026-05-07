@@ -22,11 +22,12 @@ class Connector:
         stmt = insert(self.model).values(data.model_dump()).returning(self.model)
         result = await session.execute(stmt)
 
+        obj = result.scalar()
         if commit:
             await session.commit()
-            await session.refresh(result)
+            await session.refresh(obj)
 
-        return result.scalar()
+        return obj
 
     async def get_objects(
             self,
