@@ -1,6 +1,8 @@
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import warehouse_factory
+
 
 @pytest.mark.asyncio
 async def test_create_warehouse_unauthorized(client: AsyncClient):
@@ -12,13 +14,8 @@ async def test_create_warehouse_unauthorized(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_get_warehouse(admin_client: AsyncClient):
-    response = await admin_client.post(
-        "/warehouse/",
-        json={"name": "Test Warehouse", "location": "Lviv"},
-    )
-    assert response.status_code == 201
-    warehouse_id = response.json()["id"]
+async def test_create_get_warehouse(admin_client: AsyncClient, warehouse_factory):
+    warehouse_id = await warehouse_factory()
 
     response = await admin_client.get(f"/warehouse/{warehouse_id}")
     assert response.status_code == 200
@@ -34,26 +31,45 @@ async def test_warehouses_isolated(authorized_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_warehouse_get_list(admin_client: AsyncClient):
-    response = await admin_client.post(
-        "/warehouse/",
-        json={"name": "Test Warehouse1", "location": "Lviv"},
-    )
-    assert response.status_code == 201
-
-    response = await admin_client.post(
-        "/warehouse/",
-        json={"name": "Test Warehouse2", "location": "Kyiv"},
-    )
-    assert response.status_code == 201
+async def test_warehouse_get_list(admin_client: AsyncClient, warehouse_factory):
+    await warehouse_factory("Test Warehouse1", "Lviv")
+    await warehouse_factory("Test Warehouse2", "Kyiv")
 
     response = await admin_client.get(f"/warehouse/")
     assert response.status_code == 200
-    # assert type(response.json()) == type([])
     assert isinstance(response.json(), list)
 
+    assert len(response.json()) == 2
     assert response.json()[0]["name"] == "Test Warehouse1"
     assert response.json()[0]["location"] == "Lviv"
 
     assert response.json()[1]["name"] == "Test Warehouse2"
     assert response.json()[1]["location"] == "Kyiv"
+
+
+@pytest.mark.asyncio
+async def test_warehouse_update_good(admin_client: AsyncClient, warehouse_factory):
+    warehouse_id = await warehouse_factory()
+
+    response = await admin_client.patch(
+        f"/warehouse/{warehouse_id}",
+        json={"location": "Kyiv"}
+    )
+    assert response.status_code == 200
+    warehouse_id = response.json()["id"]
+
+    response = await admin_client.get(f"/warehouse/{warehouse_id}")
+    assert response.status_code == 200
+    assert response.json()["name"] == "Test Warehouse"
+    assert response.json()["location"] == "Kyiv"
+
+
+async def test_warehouse_update_bad(admin_client: AsyncClient):
+    fake_id = "00000000-0000-0000-0000-000000000000"
+
+    response = await admin_client.patch(
+        f"/warehouse/{fake_id}",
+        json={"location": "Kyiv"}
+    )
+    assert response.status_code == 404
+

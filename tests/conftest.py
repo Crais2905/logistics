@@ -3,7 +3,7 @@ import pytest_asyncio
 from decouple import config
 
 from httpx import AsyncClient, ASGITransport
-from sqlalchemy import update, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 
 from app.main import app
@@ -14,7 +14,6 @@ from app.schemas.enums.enums import UserRole
 engine = create_async_engine(config("DATABASE_URL"), future=True)
 
 
-# ─── scope="function" щоб loop був той самий що й у тестів ───────────────────
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def prepare_database():
     async with engine.begin() as conn:
@@ -112,3 +111,27 @@ async def admin_client(client: AsyncClient, db_session: AsyncSession) -> AsyncCl
 
     client.headers.update({"Authorization": f"Bearer {resp.json()['access_token']}"})
     return client
+
+
+# @pytest_asyncio.fixture
+# def warehouse_factory(admin_client: AsyncClient):
+#     async def _create(name: str = "Test Warehouse", location: str = "Lviv"):
+#         response = await admin_client.post(
+#             "/warehouse/",
+#             json={"name": name, "location": location},
+#         )
+#         assert response.status_code == 201
+#         return response.json()["id"]
+#     return _create
+
+@pytest_asyncio.fixture
+async def warehouse_factory(admin_client: AsyncClient):
+    async def _create(name: str = "Test Warehouse", location: str = "Lviv"):
+        response = await admin_client.post(  # admin_client з closure
+            "/warehouse/",
+            json={"name": name, "location": location},
+        )
+        assert response.status_code == 201
+        return response.json()["id"]
+    return _create  # повертаємо функцію, не викликаємо
+
