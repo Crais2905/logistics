@@ -4,6 +4,7 @@ from fastapi import APIRouter, status, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_role
+from app.db.models import User
 from app.schemas.enums.enums import UserRole
 from app.schemas.rout_schemas.user import UserCreate, UserPublic, UserLogin
 from app.db.session import get_session
@@ -74,7 +75,7 @@ async def change_user_role(
     session: AsyncSession = Depends(get_session),
     current_user: UserPublic = Depends(require_role(UserRole.admin)),
 ):
-    user = await user_crud.get_object_by_id(user_id, session)
+    user = await user_crud.get_object_by_unic_field(user_id, User.id, session)
 
     if not user:
         raise HTTPException(

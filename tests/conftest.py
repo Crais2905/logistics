@@ -113,25 +113,4 @@ async def admin_client(client: AsyncClient, db_session: AsyncSession) -> AsyncCl
     return client
 
 
-# @pytest_asyncio.fixture
-# def warehouse_factory(admin_client: AsyncClient):
-#     async def _create(name: str = "Test Warehouse", location: str = "Lviv"):
-#         response = await admin_client.post(
-#             "/warehouse/",
-#             json={"name": name, "location": location},
-#         )
-#         assert response.status_code == 201
-#         return response.json()["id"]
-#     return _create
-
-@pytest_asyncio.fixture
-async def warehouse_factory(admin_client: AsyncClient):
-    async def _create(name: str = "Test Warehouse", location: str = "Lviv"):
-        response = await admin_client.post(  # admin_client з closure
-            "/warehouse/",
-            json={"name": name, "location": location},
-        )
-        assert response.status_code == 201
-        return response.json()["id"]
-    return _create  # повертаємо функцію, не викликаємо
 
