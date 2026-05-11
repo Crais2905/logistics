@@ -63,7 +63,7 @@ async def test_warehouse_update_good(admin_client: AsyncClient, warehouse_factor
     assert response.json()["name"] == "Test Warehouse"
     assert response.json()["location"] == "Kyiv"
 
-
+@pytest.mark.asyncio
 async def test_warehouse_update_bad(admin_client: AsyncClient):
     fake_id = "00000000-0000-0000-0000-000000000000"
 
@@ -72,4 +72,16 @@ async def test_warehouse_update_bad(admin_client: AsyncClient):
         json={"location": "Kyiv"}
     )
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_warehouse_inactivate(admin_client: AsyncClient, warehouse_factory):
+    warehouse_id = await warehouse_factory()
+
+    response = await admin_client.get(f"/warehouse/{warehouse_id}")
+    assert response.json()["is_active"] == True
+
+    response = await admin_client.patch(f"/warehouse/{warehouse_id}/deactivate")
+    assert response.status_code == 200
+    assert response.json()["is_active"] == False
 
