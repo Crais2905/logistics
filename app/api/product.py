@@ -65,7 +65,7 @@ async def get_product(
 
 
 @router.patch("/{product_id}", status_code=status.HTTP_200_OK, response_model=ProductPublic)
-async def update_warehouse(
+async def update_product(
     product_id: UUID,
     new_data: ProductUpdate,
     product_crud: ProductCRUD = Depends(ProductCRUD),
@@ -96,7 +96,7 @@ async def update_warehouse(
 
 
 @router.patch("/{product_id}/deactivate", status_code=status.HTTP_200_OK, response_model=ProductPublic)
-async def warehouse_deactivate(
+async def product_deactivate(
     product_id: UUID,
     product_crud: ProductCRUD = Depends(ProductCRUD),
     session: AsyncSession = Depends(get_session),
