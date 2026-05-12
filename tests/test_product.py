@@ -130,15 +130,16 @@ async def test_update_product_unauthorized(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_update_product_forbidden_for_regular_user(
-        authorized_client: AsyncClient, product_factory
+        authorized_client: AsyncClient
 ):
     """A regular user cannot update a product."""
-    product_id = await product_factory()
+    fake_id = "00000000-0000-0000-0000-000000000000"
 
     response = await authorized_client.patch(
-        f"/product/{product_id}",
+        f"/product/{fake_id}",
         json={"unit": "l"},
     )
+
     assert response.status_code == 403
 
 
@@ -181,12 +182,12 @@ async def test_deactivate_product_unauthorized(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_deactivate_product_forbidden_for_regular_user(
-        authorized_client: AsyncClient, product_factory
+        authorized_client: AsyncClient
 ):
     """A regular user cannot deactivate a product."""
-    product_id = await product_factory()
+    fake_id = "00000000-0000-0000-0000-000000000000"
 
-    response = await authorized_client.patch(f"/product/{product_id}/deactivate")
+    response = await authorized_client.patch(f"/product/{fake_id}/deactivate")
     assert response.status_code == 403
 
 
