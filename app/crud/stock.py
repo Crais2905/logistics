@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.connector import Connector
 from app.db.models import Stock
+from app.schemas.rout_schemas.stock import StockCreate
 
 
 class StockCRUD(Connector):
@@ -22,7 +23,15 @@ class StockCRUD(Connector):
             self.model.warehouse_id == warehouse_id,
         ).with_for_update()
 
-        return await session.scalar(stmt)
+        stock = await session.scalar(stmt)
+
+        if stock is None:
+            stock = await self.write_to_db(
+                StockCreate(product_id=product_id, warehouse_id=warehouse_id, quantity=0),
+                session, commit=False
+            )
+
+        return stock
 
     async def increase(
             self,
