@@ -110,7 +110,7 @@ async def test_create_adjust_operation(admin_client: AsyncClient, warehouse_fact
     response = await admin_client.post(
         "/operations/",
         json={
-            "type": "adjust",
+            "type": "adjustment",
             "product_id": product_id,
             "quantity": 45,
             "from_warehouse_id": warehouse_id,

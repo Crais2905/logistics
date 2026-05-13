@@ -24,7 +24,7 @@ OPERATION_RULES = {
         forbidden=set(),
     ),
     TransferType.ADJUSTMENT.value: OperationRule(
-        required=set(),
-        forbidden={"from_warehouse_id", "to_warehouse_id"},
+        required={"from_warehouse_id"},
+        forbidden={"to_warehouse_id"},
     ),
 }
