@@ -64,7 +64,7 @@ Logistics/
 │   └── test_inv_operations.py   # Inventory operations tests
 ├── .env                  # Environment variables (not committed)
 ├── alembic.ini           # Alembic migration config
-├── pyproject.toml        # Project metadata and dependencies
+├── pyproject.toml        # Test config
 └── requirements.txt      # Python dependencies
 ```
 
