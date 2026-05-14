@@ -1,17 +1,16 @@
 from uuid import UUID
 
-import asyncio
 from fastapi import Depends, HTTPException, status
-from sqlalchemy import desc, or_
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-
 
 from app.crud.connector import Connector
+from app.crud.product import ProductCRUD
 from app.crud.stock import StockCRUD, get_stock_crud
-from app.db.models import InventoryOperation, Warehouse
+from app.crud.warehouse import WarehouseCRUD
+from app.db.models import InventoryOperation, Warehouse, Product
 from app.schemas.enums.enums import TransferType
 from app.schemas.rout_schemas.inventory_operations import InventoryOperationCreate
+from app.schemas.rules.inventory_operations import OPERATION_RULES
 
 
 class InventoryOperationsCRUD(Connector):
@@ -22,9 +21,13 @@ class InventoryOperationsCRUD(Connector):
     async def create_operation(
         self,
         data: InventoryOperationCreate,
+        warehouse_crud: WarehouseCRUD,
+        product_crud: ProductCRUD,
         user_id: UUID,
         session: AsyncSession
     ):
+        await self._validate_references(data, warehouse_crud, product_crud, session)
+
         data = InventoryOperationCreate(
             **data.model_dump(exclude={"created_by"}),
             created_by=user_id
@@ -91,28 +94,50 @@ class InventoryOperationsCRUD(Connector):
                     session=session,
                 )
 
-    async def get_warehouse_operations(
-        self, warehouse: Warehouse,
-        session: AsyncSession,
-        offset: int = 0,
-        limit: int = 10,
-        desc_: bool = False
+
+    async def _validate_references(
+            self, data: InventoryOperationCreate,
+            warehouse_crud: WarehouseCRUD,
+            product_crud: ProductCRUD,
+            session: AsyncSession,
     ):
-        stmt = select(self.model).filter(
-            or_(
-                self.model.from_warehouse_id == warehouse.id,
-                self.model.to_warehouse_id == warehouse.id
-            )
+        product = await product_crud.get_object_by_unic_field(
+            field_value=data.product_id,
+            field=Product.id,
+            session=session
         )
 
-        if desc_:
-            stmt = stmt.order_by(desc(self.model.created_at))
+        if not product:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Product with id={data.product_id} not found"
+            )
 
-        stmt = stmt.offset(offset).limit(limit)
-        return await session.scalars(stmt)
+        rule = OPERATION_RULES[data.type]
+        warehouse_ids_to_check = {
+            "from_warehouse_id": data.from_warehouse_id,
+            "to_warehouse_id": data.to_warehouse_id,
+        }
+
+        for field, warehouse_id in warehouse_ids_to_check.items():
+            if field not in rule.required:
+                continue
+
+            warehouse = await warehouse_crud.get_object_by_unic_field(
+                field_value=warehouse_id,
+                field=Warehouse.id,
+                session=session
+            )
+            if not warehouse:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Warehouse with id={warehouse_id} not found"
+                )
 
 
 def get_inventory_operations_crud(
     stock_crud: StockCRUD = Depends(get_stock_crud),
 ) -> InventoryOperationsCRUD:
-    return InventoryOperationsCRUD(stock_crud=stock_crud)
+    return InventoryOperationsCRUD(
+        stock_crud=stock_crud,
+    )

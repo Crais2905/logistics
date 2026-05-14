@@ -2,6 +2,8 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_role
+from app.crud.product import ProductCRUD
+from app.crud.warehouse import WarehouseCRUD
 from app.schemas.enums.enums import UserRole
 from app.schemas.rout_schemas.inventory_operations import InventoryOperationCreate
 from app.crud.inventory_oprations import get_inventory_operations_crud, InventoryOperationsCRUD
@@ -15,13 +17,21 @@ router = APIRouter()
 async def create_operation(
     data: InventoryOperationCreate,
     inventory_operations_crud: InventoryOperationsCRUD = Depends(get_inventory_operations_crud),
+    warehouse_crud: WarehouseCRUD = Depends(WarehouseCRUD),
+    product_crud: ProductCRUD = Depends(ProductCRUD),
     session: AsyncSession = Depends(get_session),
     current_user: UserPublic = Depends(require_role(
         UserRole.admin,
         UserRole.manager
     ))
 ):
-    result = await inventory_operations_crud.create_operation(data, current_user.id, session)
+    result = await inventory_operations_crud.create_operation(
+        data,
+        warehouse_crud,
+        product_crud,
+        current_user.id,
+        session
+    )
 
     if not result:
         raise HTTPException(
