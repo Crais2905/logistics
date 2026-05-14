@@ -49,7 +49,6 @@ Logistics/
 ├── app/
 │   ├── api/           # Route definitions (FastAPI routers)
 │   ├── auth/          # Authentication logic (JWT, password hashing)
-│   ├── core/          # App config, settings, startup
 │   ├── crud/          # Database query functions (Create, Read, Update, Delete)
 │   ├── db/            # Database engine and session management
 │   ├── schemas/       # Pydantic request/response models
